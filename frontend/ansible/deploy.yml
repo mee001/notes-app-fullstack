@@ -1,0 +1,29 @@
+---
+- name: Deploy Notes App on Debian 12
+  hosts: debian
+  become: yes
+  tasks:
+    - name: Install Docker deps
+      apt:
+        name: [docker.io, docker-compose, git]
+        update_cache: yes
+        state: present
+
+    - name: Enable docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Clone repo
+      git:
+        repo: https://github.com/mee001/notes-app-devops.git
+        dest: /home/azureuser/notes-app-devops
+        force: yes
+      become_user: azureuser
+
+    - name: Build and run app
+      shell: docker-compose up -d --build
+      args:
+        chdir: /home/azureuser/notes-app-devops
+      become_user: azureuser
